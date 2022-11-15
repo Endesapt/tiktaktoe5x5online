@@ -4,12 +4,16 @@ const fs=require('fs');
 const session = require('express-session')
 const{}=require('./controllers/controllers');
 
+
+
+
 const app=express();
 app.set('view engine','hbs');
+const online=require('./routes/onlinerouter.js');
 
 
 let data=require('./data/data.json');
-let lobbys={};
+
 
 
 //middleware
@@ -23,9 +27,11 @@ app.use('',express.static(path.join(__dirname,'static')));
 app.use(express.json());
 app.use(express.urlencoded())
 
+
 //регистрация и логин
 app.get('/',(req,res)=>{  
     if(req.session.username){
+        res.setHeader('Access-Control-Allow-Credentials', 'true')
         res.render(path.join(__dirname,'static','hbs','index.hbs'),data[req.session.username]);    
     }else{
         res.render(path.join(__dirname,'static','hbs','register.hbs')); 
@@ -56,7 +62,6 @@ app.post('/register',(req,res)=>{
         res.redirect('../');
     }
 })
-
 //все функции сайта
 
 //проверка на зареганность
@@ -69,7 +74,9 @@ app.use((req,res,next)=>{
 })
 
 app.get('/local',(req,res)=>{
-    res.render(path.join(__dirname,'static','hbs','localgame.hbs'))
+    res.render(path.join(__dirname,'static','hbs','game.hbs'),{localgame:true});
 });
+
+app.use('/online',online);
 
 app.listen(3000,()=>{console.log("http://localhost:3000")});
