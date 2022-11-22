@@ -1,8 +1,8 @@
 const express=require('express');
 const path=require('path');
-const fs=require('fs');
-const session = require('express-session')
-const{}=require('./controllers/controllers');
+const session = require('express-session');
+const{getMainPage,login,register,startLocalGame}=require('./controllers/appcontroller');
+const{checkLogin}=require('./middleware/app_middleware');
 
 
 
@@ -12,16 +12,19 @@ app.set('view engine','hbs');
 const online=require('./routes/onlinerouter.js');
 
 
-let data=require('./data/data.json');
+
 
 
 
 //middleware
 app.use(session({
     secret: 'vatahell1313',
-    resave: true,
-    saveUninitialized: true,
-    cookie: { secure: false }
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        httpOnly:false,
+        secure: false 
+    }
 }));
 app.use('',express.static(path.join(__dirname,'static')));
 app.use(express.json());
@@ -29,53 +32,15 @@ app.use(express.urlencoded())
 
 
 //регистрация и логин
-app.get('/',(req,res)=>{  
-    if(req.session.username){
-        res.setHeader('Access-Control-Allow-Credentials', 'true')
-        res.render(path.join(__dirname,'static','hbs','index.hbs'),data[req.session.username]);    
-    }else{
-        res.render(path.join(__dirname,'static','hbs','register.hbs')); 
-    }
-});
-app.post('/',(req,res)=>{
-    if(data[req.body.username]?.password==req.body.password){
-        req.session.username=req.body.username;
-        res.redirect('/');
-
-    }else{
-        res.render(path.join(__dirname,'static','hbs','register.hbs'),{wrongpass:true});
-    }
-});
-app.post('/register',(req,res)=>{
-    if(data[req.body.username]){
-        res.redirect('../');
-    }else{
-        data[req.body.username]={
-            password:req.body.password,
-            elo:0,
-            games:0,
-            wongames:0,
-            username:req.body.username,
-        }
-        fs.writeFileSync(path.join(__dirname,'data','data.json'), JSON.stringify(data));
-        req.session.username=req.body.username;
-        res.redirect('../');
-    }
-})
+app.get('/',getMainPage);
+app.post('/',login);
+app.post('/register',register);
 //все функции сайта
 
 //проверка на зареганность
-app.use((req,res,next)=>{
-    if(req.session.username){
-        next();
-    }else{
-        res.redirect('http://localhost:3000/');
-    }
-})
+app.use(checkLogin);
 
-app.get('/local',(req,res)=>{
-    res.render(path.join(__dirname,'static','hbs','game.hbs'),{localgame:true});
-});
+app.get('/local',startLocalGame);
 
 app.use('/online',online);
 
