@@ -62,7 +62,8 @@ fetch(window.location+'/getMapInfo').then((response)=>{
   :"there is no opponent yet";
   opponent.innerHTML=`Your opponent: ${oppstr}`;
   document.getElementById('game_info').appendChild(opponent);
-  
+  console.log(answer);
+  $("#opened").text(`type of lobby: ${answer.opened?'opened':'closed'}`);
 
 },()=>{return})
 
@@ -90,6 +91,5 @@ async function getMap(){
     }
   },()=>{return})
 }
-//обновяем данные о каточке после входа
 
 setInterval(getMap,100)

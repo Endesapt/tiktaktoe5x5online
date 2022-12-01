@@ -2,7 +2,8 @@ const path=require('path');
 const uniqid = require('uniqid');
 const data=require('../data/data.json');
 const fs=require('fs');
-//data
+const x = require('uniqid');
+//lobbies info
 let lobbies={};
 
 
@@ -38,6 +39,7 @@ function createNewLobby(req,res){
         turn:'x',
         lastmoves:['','','','','','','','','','','',''],
         win:'',
+        opened:req.query?.opened,
     };//новое лобби
     //АФК Система
     setTimeout(checkAFK,30*1000,[...(lobbies[id].lastmoves)],id);
@@ -97,6 +99,7 @@ function getMapInfo(req,res){
             lastmoves:lobbies[id].lastmoves,
             win:lobbies[id].win,
             map:lobbies[id].map,
+            opened:lobbies[id].opened,
             opponent:(lobbies[id].players[0]==req.session.username?lobbies[id].players[1]:lobbies[id].players[0]),
         }));
 }
@@ -115,4 +118,13 @@ function checkLobby(req,res,next){
         res.status(404).send('No such a lobby or game has ended');
     }
 }
-module.exports={checkWin,createNewLobby,getLobby,makeMove,getMatchInfo,getMapInfo,checkLobby};
+function addToQueue(req,res){
+    for(let x in lobbies){
+        if(lobbies[x].players.length==1 && lobbies[x].opened){
+            res.redirect(`./${x}`);
+            return;
+        }
+    }
+    res.redirect('./createNewLobby?opened=true');
+}
+module.exports={addToQueue,checkWin,createNewLobby,getLobby,makeMove,getMatchInfo,getMapInfo,checkLobby};
