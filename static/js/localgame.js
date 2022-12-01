@@ -38,7 +38,7 @@ function checkWin(map,x,y,turn){
     )return true;
     return false;
 }
-$('#game_table').click(function (e) { //Offset mouse Position
+let tableclick=function (e) { //Offset mouse Position
     var posX = $(this).offset().left,
     posY = $(this).offset().top;
     x=Math.ceil((e.pageX - posX)/56)-1;
@@ -47,11 +47,13 @@ $('#game_table').click(function (e) { //Offset mouse Position
     drawElement(x,y,turn);
     map[x][y]=turn;
     if(checkWin(map,x,y,turn)){
-        $('#win').text(`${turn} выиграл!`);
+        $('#win').text(`${turn} выиграл! Победитель получит 20 elo`);
+        $('#game_table').unbind("click",tableclick);
     }
     turn=(turn=='x'?'o':'x');
     $('#turn').text(turn);
 
-});
+}
+$('#game_table').bind("click",tableclick);
 
 

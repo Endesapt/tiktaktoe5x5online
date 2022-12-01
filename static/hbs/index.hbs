@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/js/index.js"></script>
     <title>Твой аккаунт</title>
 </head>
-<body>
-    <div>username: {{username}}</div>
-    <div>elo: {{elo}}</div>
+<body onload="getBestPlayers()">
+    {{>userinfo}}
+    
     <div>Сыграть локально <button onclick="window.location='/local'">Играть</button></div>
     <div>Создать лобби <button onclick="window.location='/online/createNewLobby'">Новое лобби</button></div>
+    <div >
+        Топ 10 лучших игроков<br>
+        <ol id="best_players"></ol>
+    </div>
 </body>
 </html>

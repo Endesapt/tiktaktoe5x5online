@@ -41,4 +41,24 @@ function register(req,res){
 function startLocalGame(req,res){
     res.render(path.join(__dirname,'..','static','hbs','game.hbs'),{localgame:true});
 }
-module.exports={getMainPage,login,register,startLocalGame};
+function getUsersPage(req,res){
+    if(data[req.query?.username]){
+        res.render(path.join(__dirname,'..','static','hbs','user.hbs'),data[req.query.username])
+    }else{
+        res.send("No such user or username is not provided")
+    }
+}
+function getBestPlayers(req,res){
+    let sortable = [];
+    for (el in data) {
+        sortable.push([el, data[el].elo]);
+    }
+
+    sortable.sort(function(a, b) {
+        return b[1] - a[1];
+    });
+    res.send(JSON.stringify({
+        players:sortable,
+    }))
+}
+module.exports={getBestPlayers,getUsersPage,getMainPage,login,register,startLocalGame};
