@@ -15,9 +15,12 @@
 
         </table>
     </div>
-    <div>
+    <div id="game_info">
         <div>Ход <span id="turn">x</span></div>
         <div><span id='win'></span></div>
+        {{#if onlinegame}}
+            <div><span id='opened'></span></div>
+        {{/if}}
         <div><button onclick='window.location="http://localhost:3000/"'>quit</button></div>
     </div>
     {{#if localgame}}

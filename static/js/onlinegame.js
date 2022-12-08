@@ -42,7 +42,7 @@ fetch(window.location+'/getMapInfo').then((response)=>{
   $('#turn').text(answer.turn);
   let map=answer.map;
   if(answer.win){
-    $('#win').text(`${answer.win} win!`);
+    $('#win').text(`${answer.win} win! Победитель получит 20 эло`);
   }
   for(x in map){
     for(y in map[x]){
@@ -55,7 +55,15 @@ fetch(window.location+'/getMapInfo').then((response)=>{
       }
     }
   }
-  
+
+  let opponent=document.createElement('div');
+
+  let oppstr=answer.opponent?(answer.opponent+`<span style="color:blue" onclick='window.open("http://localhost:3000/users?username=${answer.opponent}");'>(see profile)</span>`)
+  :"there is no opponent yet";
+  opponent.innerHTML=`Your opponent: ${oppstr}`;
+  document.getElementById('game_info').appendChild(opponent);
+  console.log(answer);
+  $("#opened").text(`type of lobby: ${answer.opened?'opened':'closed'}`);
 
 },()=>{return})
 
@@ -67,7 +75,7 @@ async function getMap(){
     return response.json()
   }).then((answer)=>{
     if(answer.win){
-      $('#win').text(`${answer.win} win!`);
+      $('#win').text(`${answer.win} win! Победитель получит 20 эло`);
     }
     for(pos of answer.lastmoves){
       if(!lastmoves.some( 
@@ -83,6 +91,5 @@ async function getMap(){
     }
   },()=>{return})
 }
-//обновяем данные о каточке после входа
 
 setInterval(getMap,100)

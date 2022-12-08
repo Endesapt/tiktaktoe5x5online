@@ -1,7 +1,9 @@
 const path=require('path');
 const uniqid = require('uniqid');
-
-//data
+const data=require('../data/data.json');
+const fs=require('fs');
+const x = require('uniqid');
+//lobbies info
 let lobbies={};
 
 
@@ -19,10 +21,12 @@ function checkWin(map,x,y,turn){
     return false;
 }
 function checkAFK(arr,id){
-    if(arr[arr.length-1]==lobbies[id].lastmoves[11]){
-        delete lobbies[id]
-    }else{
-        setTimeout(checkAFK,30*1000,[...(lobbies[id].lastmoves)],id);
+    if(lobbies[id]){
+        if(arr[arr.length-1]==lobbies[id].lastmoves[11]){
+            delete lobbies[id]
+        }else{
+            setTimeout(checkAFK,30*1000,[...(lobbies[id].lastmoves)],id);
+        }
     }
 }
 function createNewLobby(req,res){
@@ -35,6 +39,7 @@ function createNewLobby(req,res){
         turn:'x',
         lastmoves:['','','','','','','','','','','',''],
         win:'',
+        opened:req.query?.opened,
     };//новое лобби
     //АФК Система
     setTimeout(checkAFK,30*1000,[...(lobbies[id].lastmoves)],id);
@@ -60,6 +65,11 @@ function makeMove(req,res){
             lobbies[id].lastmoves.push({x:x,y:y,turn:lobbies[id].turn});
             if(checkWin(lobbies[id].map,x,y,lobbies[id].turn)){
                 lobbies[id].win=lobbies[id].turn;
+                switch(lobbies[id].win){
+                    case"x":data[lobbies[id].players[0]].elo+=20;break;
+                    case"o":data[lobbies[id].players[1]].elo+=20;break;
+                }
+                fs.writeFileSync(path.join(__dirname,'..','data','data.json'), JSON.stringify(data));
                 setTimeout(()=>{delete lobbies[id]}, 30*1000);
             }
             lobbies[id].turn=lobbies[id].turn=='x'?'o':'x';
@@ -84,7 +94,14 @@ function getMatchInfo(req,res){
 }
 function getMapInfo(req,res){
     id=req.params.id;
-    res.send(JSON.stringify(lobbies[id]));
+    res.send(JSON.stringify({
+            turn:lobbies[id].turn,
+            lastmoves:lobbies[id].lastmoves,
+            win:lobbies[id].win,
+            map:lobbies[id].map,
+            opened:lobbies[id].opened,
+            opponent:(lobbies[id].players[0]==req.session.username?lobbies[id].players[1]:lobbies[id].players[0]),
+        }));
 }
 function checkLobby(req,res,next){
     id=req.params.id;
@@ -101,4 +118,13 @@ function checkLobby(req,res,next){
         res.status(404).send('No such a lobby or game has ended');
     }
 }
-module.exports={checkWin,createNewLobby,getLobby,makeMove,getMatchInfo,getMapInfo,checkLobby};
+function addToQueue(req,res){
+    for(let x in lobbies){
+        if(lobbies[x].players.length==1 && lobbies[x].opened){
+            res.redirect(`./${x}`);
+            return;
+        }
+    }
+    res.redirect('./createNewLobby?opened=true');
+}
+module.exports={addToQueue,checkWin,createNewLobby,getLobby,makeMove,getMatchInfo,getMapInfo,checkLobby};
